@@ -134,3 +134,28 @@ resource "azurerm_virtual_machine" "vm-AulaInfra" {
   }
 }
 
+data "azurerm_public_ip" "ip-aula"{
+    name = azurerm_public_ip.ip-aulaInfra.name
+    resource_group_name = azurerm_resource_group.InfraCloudAula.name
+}
+
+resource "null_resource" "install-apache" {
+  connection {
+    type = "ssh"
+    host = data.azurerm_public_ip.ip-aula.ip_address
+    user = "testAdmin"
+    password = "Password1234!"
+  }
+
+ provisioner "remote-exec" {
+    inline = [
+      "sudo apt update",
+      "sudo apt install -y apache2",
+    ]
+  }
+
+  depends_on = [
+    
+    azurerm_virtual_machine.vm-AulaInfra
+  ]
+}
